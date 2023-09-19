@@ -2,7 +2,6 @@ from math import radians, cos, sin, asin, sqrt
 import dotenv
 import os
 import requests
-import json
 
 dotenv.load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
