@@ -60,5 +60,4 @@ for index, row in df.iterrows():
 df["COLOR"] = colors
 conn = sqlite3.connect('./app/knn.db')
 df["GEOLOCALIZACION"] = df["GEOLOCALIZACION"].astype(str)
-df
 df.to_sql('puntos', conn, if_exists='replace', index=False)
