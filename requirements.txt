@@ -1,3 +1,5 @@
 pandas==2.1.0
 python-dotenv==1.0.0
 Requests==2.31.0
+Flask==2.3.3
+Flask_API==3.1
