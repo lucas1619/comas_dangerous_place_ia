@@ -1,6 +1,6 @@
 from flask import request, Flask
 from flask_api import status
-from app.knn import knn_result
+from knn import knn_result
 import sqlite3
 
 
