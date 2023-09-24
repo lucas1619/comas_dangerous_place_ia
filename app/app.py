@@ -6,10 +6,9 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-  return 'Hello from Flask!'
+    return 'Hello from Flask!'
 
 @app.route('/classify', methods=['GET'])
-# get method
 def classify():
     try:
         args = request.args
@@ -26,4 +25,7 @@ def classify():
         }, status.HTTP_412_PRECONDITION_FAILED
 
 if __name__ == '__main__': 
-   app.run()
+    app.run()
+
+# Esta es la línea que añadimos para que gunicorn pueda encontrar la instancia de Flask
+application = app
