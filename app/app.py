@@ -1,10 +1,34 @@
 from flask import request, Flask
 from flask_api import status
-from knn import knn_result
+from knn import knn_result, call_reverse_geocode
 import sqlite3
 
 
 app = Flask(__name__)
+
+class Zone: 
+    def __init__(self, color, geolocalizacion, lugar, suma_x = -1, index = -1):
+        self.color = color
+        self.geolocalizacion = geolocalizacion
+        self.lugar = lugar
+        self.suma_x = suma_x
+        self.index = index
+
+    def save_to_db(self, conn):
+        c = conn.cursor()
+        c.execute("INSERT INTO puntos VALUES (?, ?, ?, ?, ?)", (self.suma_x, self.lugar, self.geolocalizacion, self.color, self.index))
+        conn.commit()
+        conn.close()
+    
+    def __iter__(self):
+        yield 'color', self.color
+        yield 'geolocalizacion', self.geolocalizacion
+        yield 'lugar', self.lugar
+        yield 'suma_x', self.suma_x
+        yield 'index', self.index
+
+    def __dict__(self):
+        return dict(self)
 
 @app.route('/')
 def hello_world():
@@ -30,7 +54,7 @@ def classify():
             "error" : str(e)
         }, status.HTTP_412_PRECONDITION_FAILED
     
-@app.route('/zones', methods=['get'])
+@app.route('/zones', methods=['GET'])
 def puntos():
     conn = sqlite3.connect('./knn.db')
     c = conn.cursor()
@@ -41,6 +65,33 @@ def puntos():
     return {
         "zones": zones
     }, status.HTTP_200_OK
+
+@app.route('/zones', methods=['POST'])
+def create_puntos():
+    try:
+        conn = sqlite3.connect('./knn.db')
+        args = request.args
+        color, lat, lon = args['color'], args['lat'], args['lon']
+        color, lat, lon = str(color), float(lat), float(lon)
+        location = call_reverse_geocode(lat, lon)
+        lugar = location['formatted_address']
+        zone = Zone(color, f"({lat}, {lon})", lugar)
+        zone.save_to_db(conn)
+        return {
+            "zones": dict(zone)
+        }, status.HTTP_200_OK
+    except KeyError:
+        return {
+            "error" : "color, geolocalizacion, lugar, are required"
+        }, status.HTTP_412_PRECONDITION_FAILED
+    except ValueError:
+        return {
+            "error" : "lat and lon must be floats"
+        }, status.HTTP_412_PRECONDITION_FAILED 
+    except Exception as e:
+        return {
+            "error" : str(e)
+        }, status.HTTP_412_PRECONDITION_FAILED
 
 if __name__ == '__main__': 
     app.run()
