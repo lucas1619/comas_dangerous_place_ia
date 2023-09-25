@@ -3,7 +3,7 @@ import dotenv
 import os
 import sqlite3
 import requests
-from app.zone import Zone
+from zone import Zone
 
 dotenv.load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
