@@ -26,13 +26,20 @@ def call_reverse_geocode(lat : float, lon : float):
     url = f"https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lon}&key={GOOGLE_API_KEY}&language=es"
     response = requests.get(url)
     json = response.json()
+    if len(json["results"]) == 0:
+        return {
+            "error" : "No se encontró la dirección"
+        }
     return json["results"][0]
 
 def knn_result(lat : float, lon : float):
     """
     Returns the k nearest neighbors to the given latitude and longitude
     """
+    location = call_reverse_geocode(lat, lon)
+    if "error" in location:
+        raise Exception(location["error"])
     return {
-        "current_location" : call_reverse_geocode(lat, lon),
+        "current_location" : location,
         "danger_code" : "red"
     }
