@@ -25,6 +25,10 @@ def classify():
         return {
             "error" : "lat and lon must be floats"
         }, status.HTTP_412_PRECONDITION_FAILED
+    except Exception as e:
+        return {
+            "error" : str(e)
+        }, status.HTTP_412_PRECONDITION_FAILED
     
 @app.route('/zones', methods=['get'])
 def puntos():
