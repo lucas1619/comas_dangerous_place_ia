@@ -41,6 +41,15 @@ def puntos():
     names = list(map(lambda x: x[0], c.description))
     zones = c.fetchall()
     zones = list(map(lambda x: dict(zip(names, x)), zones))
+    
+    n = len(zones)
+    for i in range(n):
+        geolocation = zones[i]['GEOLOCALIZACION']
+        geolocation = geolocation[1:-1].split(',')
+        lat, lon = geolocation[0], geolocation[1]
+        zones[i]['latitud'] = lat
+        zones[i]['longitud'] = lon
+
     return {
         "zones": zones
     }, status.HTTP_200_OK
