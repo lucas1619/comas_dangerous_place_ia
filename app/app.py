@@ -8,10 +8,10 @@ import sqlite3
 app = Flask(__name__)
 
 
-
 @app.route('/')
 def hello_world():
     return 'Hello from Flask!'
+
 
 @app.route('/classify', methods=['GET'])
 def classify():
@@ -22,17 +22,18 @@ def classify():
         return knn_result(lat, lon), status.HTTP_200_OK
     except KeyError:
         return {
-            "error" : "lat and lon are required"
+            "error": "lat and lon are required"
         }, status.HTTP_412_PRECONDITION_FAILED
     except ValueError:
         return {
-            "error" : "lat and lon must be floats"
+            "error": "lat and lon must be floats"
         }, status.HTTP_412_PRECONDITION_FAILED
     except Exception as e:
         return {
-            "error" : str(e)
+            "error": str(e)
         }, status.HTTP_412_PRECONDITION_FAILED
-    
+
+
 @app.route('/zones', methods=['GET'])
 def puntos():
     conn = sqlite3.connect('./knn.db')
@@ -41,7 +42,7 @@ def puntos():
     names = list(map(lambda x: x[0], c.description))
     zones = c.fetchall()
     zones = list(map(lambda x: dict(zip(names, x)), zones))
-    
+
     n = len(zones)
     for i in range(n):
         geolocation = zones[i]['GEOLOCALIZACION']
@@ -54,34 +55,38 @@ def puntos():
         "zones": zones
     }, status.HTTP_200_OK
 
+
 @app.route('/zones', methods=['POST'])
 def create_puntos():
     try:
         conn = sqlite3.connect('./knn.db')
         args = request.args
-        color, lat, lon = args['color'], args['lat'], args['lon']
-        color, lat, lon = str(color), float(lat), float(lon)
+        color, lat, lon, tipo_delito, modalidad = args['color'], args[
+            'lat'], args['lon'], args['tipo_delito'], args['modalidad']
+        color, lat, lon, tipo_delito, modalidad = str(color), float(lat), float(
+            lon), str(tipo_delito), str(modalidad)
         location = call_reverse_geocode(lat, lon)
         lugar = location['formatted_address']
-        zone = Zone(color, f"({lat}, {lon})", lugar)
+        zone = Zone(color, f"({lat}, {lon})", lugar, tipo_delito, modalidad)
         zone.save_to_db(conn)
         return {
             "zones": dict(zone)
         }, status.HTTP_200_OK
     except KeyError:
         return {
-            "error" : "color, geolocalizacion, lugar, are required"
+            "error": "color, geolocalizacion, lugar, tipo_delito, modalidad, are required"
         }, status.HTTP_412_PRECONDITION_FAILED
     except ValueError:
         return {
-            "error" : "lat and lon must be floats"
-        }, status.HTTP_412_PRECONDITION_FAILED 
+            "error": "error in the type of the parameters"
+        }, status.HTTP_412_PRECONDITION_FAILED
     except Exception as e:
         return {
-            "error" : str(e)
+            "error": str(e)
         }, status.HTTP_412_PRECONDITION_FAILED
 
-if __name__ == '__main__': 
+
+if __name__ == '__main__':
     app.run()
 
 # Esta es la línea que añadimos para que gunicorn pueda encontrar la instancia de Flask
